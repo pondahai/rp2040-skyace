@@ -1,5 +1,7 @@
 # SKY ACE
 
+![SKY ACE 畫面](docs/screenshot.png)
+
 RP2040 復古掌機的直向捲軸空戰射擊，玩法致敬 1943：能量條會隨時間消耗、
 被打中扣能量、吃 POW 補給，B 鍵翻滾閃避。用 [rp2040-retro-sdk](https://github.com/pondahai/rp2040-retro-sdk) 開發（`sdk/` submodule）。
 
