@@ -30,13 +30,3 @@ SKY ACE 是 [rp2040-retro-handheld](https://github.com/pondahai/rp2040-retro-han
 | [rp2040-retro-sdmount](https://github.com/pondahai/rp2040-retro-sdmount) | 不拔 SD 卡，從電腦把檔案推進掌機（`skyace_run` 靠它） |
 
 想自己做一款遊戲，從 SDK 的 [GETTING-STARTED](https://github.com/pondahai/rp2040-retro-sdk/blob/main/docs/GETTING-STARTED.md) 開始；SKY ACE 就是照那份文件做出來的。
-
-## 建置
-
-```bash
-git clone --recursive https://github.com/pondahai/rp2040-skyace
-source sdk/tools/env.sh
-sh pc/build.sh && build_pc/preview out.png A96      # PC 預覽（按鍵序列見 pc/preview.c）
-cmake -S . -B build_offset -G Ninja -DLOADER_OFFSET_BUILD=ON
-ninja -C build_offset skyace_run                    # 編譯、推上掌機、啟動
-```
