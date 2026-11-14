@@ -27,37 +27,57 @@ d = ImageDraw.Draw(img)
 for y in range(6, 96, 14):
     for x in range((y * 7) % 20, 96, 26):
         d.line([x, y, x + 8, y], fill=(70, 130, 205))
-# 主角雙尾撐戰機（像素放大 5 倍，機頭朝上）
+# 主角戰機：長主翼雙尾撐，佔滿封面寬度（像素放大 4 倍，機頭朝上）
 ART = [
-    ".......ww.......",
-    ".......gg.......",
-    "......gbbg......",
-    "......gbbg......",
-    ".gg...gggg...gg.",
-    "gggggggggggggggg",
-    "gwwggggggggggwwg",
-    ".gg...gggg...gg.",
-    ".gg....gg....gg.",
-    ".gg....gg....gg.",
-    ".gg....gg....gg.",
-    ".gg....gg....gg.",
-    ".gg...gggg...gg.",
-    ".gggggggggggggg.",
-    ".yy..........yy.",
+    "...........ww...........",
+    "..........gggg..........",
+    "..........gbbg..........",
+    ".....dd...gbbg...dd.....",
+    ".....gg...gggg...gg.....",
+    "dddddddddddddddddddddddd",
+    "gwwggggggggggggggggggwwg",
+    ".gggggggggggggggggggggg.",
+    ".....gg...gggg...gg.....",
+    ".....gg....gg....gg.....",
+    ".....gg..........gg.....",
+    ".....gg..........gg.....",
+    ".....gg..........gg.....",
+    "....gggggggggggggggg....",
+    ".....yy..........yy.....",
 ]
-COL = {"g": (176, 182, 192), "w": (250, 250, 250), "b": (120, 200, 255), "y": (255, 210, 40)}
-S, OX, OY = 5, 8, 6
-for yy, row in enumerate(ART):
+COL = {"g": (184, 190, 200), "d": (124, 130, 142), "w": (250, 250, 250),
+       "b": (120, 200, 255), "y": (255, 170, 30)}
+S, OX, OY = 3, 12, 46
+SHADOW = (20, 62, 124)
+for yy, row in enumerate(ART):          # 海面上的影子
     for xx, ch in enumerate(row):
         if ch in COL:
-            d.rectangle([OX + xx * S + 4, OY + yy * S + 6, OX + xx * S + S + 3, OY + yy * S + S + 5], fill=(20, 60, 120))
+            d.rectangle([OX + xx * S + 5, OY + yy * S + 8, OX + xx * S + S + 4, OY + yy * S + S + 7], fill=SHADOW)
 for yy, row in enumerate(ART):
     for xx, ch in enumerate(row):
         if ch in COL:
             d.rectangle([OX + xx * S, OY + yy * S, OX + xx * S + S - 1, OY + yy * S + S - 1], fill=COL[ch])
-# 子彈
-for x in (34, 58):
-    d.rectangle([x, 0, x + 2, 4], fill=(255, 255, 160))
+# 機槍連射：兩串子彈射向前方的敵機
+for x in (28, 64):
+    for y in (12, 22, 32):
+        d.rectangle([x, y, x + 2, y + 5], fill=(255, 250, 150))
+# 前方被擊中的敵機（機頭朝下）與爆炸火光
+ENEMY = [
+    "....gggggggg....",
+    "......gggg......",
+    ".gggggggggggggg.",
+    "gggggggggggggggg",
+    "......gbbg......",
+    ".......gg.......",
+]
+for yy, row in enumerate(ENEMY):
+    for xx, ch in enumerate(row):
+        if ch != ".":
+            d.rectangle([24 + xx * 3, 2 + yy * 3, 26 + xx * 3, 4 + yy * 3],
+                        fill=(120, 200, 255) if ch == "b" else (200, 52, 40))
+d.rectangle([58, 2, 72, 12], fill=(255, 140, 20))
+d.rectangle([61, 0, 69, 15], fill=(255, 140, 20))
+d.rectangle([62, 4, 68, 10], fill=(255, 240, 120))
 
 os.makedirs(OUT, exist_ok=True)
 img.save(os.path.join(OUT, "cover.png"))

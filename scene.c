@@ -40,23 +40,23 @@ static uint32_t rnd(scene *s)
 static int rndi(scene *s, int n) { return (int)(rnd(s) % (uint32_t)n); }
 
 /* ---------------------------------------------------------------- 圖素 */
-static const char *PLAYER_ART[16] = {
-    ".......ww.......",
-    ".......gg.......",
-    "......gbbg......",
-    "......gbbg......",
-    ".gg...gggg...gg.",
-    "gggggggggggggggg",
-    "gwwggggggggggwwg",
-    ".gg...gggg...gg.",
-    ".gg....gg....gg.",
-    ".gg....gg....gg.",
-    ".gg....gg....gg.",
-    ".gg....gg....gg.",
-    ".gg...gggg...gg.",
-    ".gggggggggggggg.",
-    ".yy..........yy.",
-    "................",
+static const char *PLAYER_ART[16] = {   /* 24×16：長主翼、雙尾撐 */
+    "...........ww...........",
+    "..........gggg..........",
+    "..........gbbg..........",
+    ".....dd...gbbg...dd.....",
+    ".....gg...gggg...gg.....",
+    "dddddddddddddddddddddddd",
+    "gwwggggggggggggggggggwwg",
+    ".gggggggggggggggggggggg.",
+    ".....gg...gggg...gg.....",
+    ".....gg....gg....gg.....",
+    ".....gg..........gg.....",
+    ".....gg..........gg.....",
+    ".....gg..........gg.....",
+    "....gggggggggggggggg....",
+    ".....yy..........yy.....",
+    "........................",
 };
 static const char *FIGHTER_ART[16] = {   /* 機頭朝下 */
     "................",
@@ -77,14 +77,14 @@ static const char *FIGHTER_ART[16] = {   /* 機頭朝下 */
     "................",
 };
 
-static uint16_t spr_player[256], spr_fighter[256], spr_red[256];
+static uint16_t spr_player[24 * 16], spr_fighter[256], spr_red[256];
 static uint16_t tiles[6 * 256];
 static rd_tilemap tmap;
 
-static void build(uint16_t *dst, const char **art, uint16_t g, uint16_t hi)
+static void build(uint16_t *dst, const char **art, int w, uint16_t g, uint16_t hi)
 {
     for (int y = 0; y < 16; y++)
-        for (int x = 0; x < 16; x++) {
+        for (int x = 0; x < w; x++) {
             uint16_t c = KEY;
             switch (art[y][x]) {
             case 'g': c = g; break;
@@ -92,8 +92,9 @@ static void build(uint16_t *dst, const char **art, uint16_t g, uint16_t hi)
             case 'y': c = hi; break;
             case 'b': c = RD_RGB565(120, 200, 255); break;
             case 'k': c = RD_RGB565(40, 40, 40); break;
+            case 'd': c = RD_RGB565(120, 126, 138); break;
             }
-            dst[y * 16 + x] = c;
+            dst[y * w + x] = c;
         }
 }
 
@@ -177,7 +178,7 @@ static void eshot(scene *s, float x, float y, float vx, float vy)
 
 static void aimed(scene *s, float x, float y, float spd, float spread)
 {
-    float dx = s->px - x, dy = s->py - y, d = sqrtf(dx * dx + dy * dy);
+    float dx = s->px + 12 - x, dy = s->py + 8 - y, d = sqrtf(dx * dx + dy * dy);
     if (d < 1) d = 1;
     float a = atan2f(dy, dx) + spread;
     eshot(s, x, y, cosf(a) * spd, sinf(a) * spd);
@@ -238,7 +239,7 @@ static void start_stage(scene *s)
     memset(s->it, 0, sizeof s->it);
     s->t = 0; s->rolls = 3; s->boss_on = 0; s->boss_warn = 0;
     s->red_left = s->red_spawn = 0;
-    s->px = 152; s->py = 200; s->inv_t = 60; s->loop_t = 0;
+    s->px = 148; s->py = 200; s->inv_t = 60; s->loop_t = 0;
 }
 
 static void new_game(scene *s)
@@ -252,9 +253,9 @@ void scene_init(scene *s)
 {
     static int built;
     if (!built) {
-        build(spr_player, PLAYER_ART, RD_RGB565(170, 176, 186), C_YEL);
-        build(spr_fighter, FIGHTER_ART, RD_RGB565(90, 130, 70), C_YEL);
-        build(spr_red, FIGHTER_ART, RD_RGB565(210, 50, 40), RD_WHITE);
+        build(spr_player, PLAYER_ART, 24, RD_RGB565(170, 176, 186), C_YEL);
+        build(spr_fighter, FIGHTER_ART, 16, RD_RGB565(90, 130, 70), C_YEL);
+        build(spr_red, FIGHTER_ART, 16, RD_RGB565(210, 50, 40), RD_WHITE);
         build_tiles();
         built = 1;
     }
@@ -410,7 +411,7 @@ static void update_play(scene *s, uint8_t held, uint8_t fired)
         if (held & RD_BTN_DOWN) dy += PSPEED;
         s->px += dx; s->py += dy;
         if (s->px < 0) s->px = 0;
-        if (s->px > 304) s->px = 304;
+        if (s->px > 296) s->px = 296;
         if (s->py < TOPBAR + 4) s->py = TOPBAR + 4;
         if (s->py > 222) s->py = 222;
 
@@ -426,8 +427,8 @@ static void update_play(scene *s, uint8_t held, uint8_t fired)
             int n = 0;
             for (int i = 0; i < MAX_PSHOT && n < (s->wpn_t ? 3 : 2); i++) {
                 if (s->ps[i].on) continue;
-                if (s->wpn_t) s->ps[i] = (shot){ s->px + 6, s->py - 4, (float)(n - 1) * 1.6f, -8, 1 };
-                else          s->ps[i] = (shot){ s->px + 3 + n * 8, s->py - 4, 0, -8, 1 };
+                if (s->wpn_t) s->ps[i] = (shot){ s->px + 11, s->py - 4, (float)(n - 1) * 1.6f, -8, 1 };
+                else          s->ps[i] = (shot){ s->px + 5 + n * 12, s->py - 2, 0, -8, 1 };
                 n++;
             }
             s->fire_cd = 4; s->sfx |= SFX_SHOT;
@@ -437,7 +438,7 @@ static void update_play(scene *s, uint8_t held, uint8_t fired)
         if (s->frame % 3 == 0) s->energy--;
         if (s->energy <= 0) {
             s->energy = 0; s->dead_t = 1; s->sfx |= SFX_BIG;
-            add_boom(s, (int)s->px + 8, (int)s->py + 8, 24);
+            add_boom(s, (int)s->px + 12, (int)s->py + 8, 24);
         }
     }
 
@@ -476,7 +477,7 @@ static void update_play(scene *s, uint8_t held, uint8_t fired)
         if (!b->on) continue;
         b->x += b->vx; b->y += b->vy;
         if (b->y < -8 || b->y > 248 || b->x < -8 || b->x > 328) { b->on = 0; continue; }
-        if (vuln && overlap(b->x - 2, b->y - 2, 4, 4, s->px + 5, s->py + 4, 6, 8)) {
+        if (vuln && overlap(b->x - 2, b->y - 2, 4, 4, s->px + 9, s->py + 3, 6, 9)) {
             b->on = 0; hurt(s, 120);
         }
     }
@@ -488,7 +489,7 @@ static void update_play(scene *s, uint8_t held, uint8_t fired)
         update_enemy(s, e);
         if (!e->on) continue;
         float w, h; enemy_box(e, &w, &h);
-        if (vuln && overlap(s->px + 3, s->py + 3, 10, 10, e->x, e->y, w, h)) {
+        if (vuln && overlap(s->px + 4, s->py + 4, 16, 6, e->x, e->y, w, h)) {
             hurt(s, 200);
             if (e->type <= E_RED) kill_enemy(s, e);
         }
@@ -500,7 +501,7 @@ static void update_play(scene *s, uint8_t held, uint8_t fired)
         if (!it->on) continue;
         it->t++; it->y += 0.8f; it->x += sinf(it->t * 0.08f) * 0.8f;
         if (it->y > 250) { it->on = 0; continue; }
-        if (!s->dead_t && overlap(s->px, s->py, 16, 16, it->x, it->y, 14, 12)) {
+        if (!s->dead_t && overlap(s->px, s->py, 24, 16, it->x, it->y, 14, 12)) {
             it->on = 0; s->sfx |= SFX_ITEM; s->score += 500;
             if (it->kind == I_POW) { s->energy += 300; if (s->energy > ENERGY_MAX) s->energy = ENERGY_MAX; }
             else s->wpn_t = 600;
@@ -629,10 +630,10 @@ void scene_render(int y0, int h, uint16_t *buf, void *ctx)
             int ph = s->loop_t;                     /* 40..1：先拉高變大再落回 */
             int grow = ph > 20 ? (40 - ph) / 4 : ph / 4;
             int x = (int)s->px - grow, y = (int)s->py - grow;
-            rd_rect(&st, x + 4 + grow, y + 4 + grow + 10, 8, 4, RD_RGB565(20, 50, 100)); /* 影子 */
-            rd_blit(&st, x + grow, y + grow - grow * 2, 16, 16, spr_player, KEY);
+            rd_rect(&st, x + 6 + grow, y + 4 + grow + 10, 12, 4, RD_RGB565(20, 50, 100)); /* 影子 */
+            rd_blit(&st, x + grow, y + grow - grow * 2, 24, 16, spr_player, KEY);
         } else if (show) {
-            rd_blit(&st, (int)s->px, (int)s->py, 16, 16, spr_player, KEY);
+            rd_blit(&st, (int)s->px, (int)s->py, 24, 16, spr_player, KEY);
         }
     }
 
