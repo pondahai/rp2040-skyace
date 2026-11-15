@@ -422,8 +422,9 @@ static void update_enemy(scene *s, enemy *e)
     }
 
     if (e->type == E_BOSS) {
-        if (e->y < 24) e->y += 0.6f;
-        else e->x = 112 + 90 * sinf(e->t * 0.012f);
+        /* 進場時記下到位的幀（借用 sink 欄位），橫移從那一刻、從原位開始，才不會跳位置 */
+        if (e->y < 24) { e->y += 0.6f; e->sink = e->t; }
+        else e->x = e->x0 + 90 * sinf((e->t - e->sink) * 0.012f);
         if (e->t > 80 && --e->cd <= 0) {
             int phase = (e->t / 240) % 3;
             if (phase == 0) for (int k = -3; k <= 3; k++) eshot(s, cx, cy + 20, k * 0.7f, 2.4f);
