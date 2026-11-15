@@ -21,8 +21,10 @@ static const rd_note SFX_ALARM_S[] = { {990, 150}, {660, 150}, {990, 150}, {660,
 static const rd_note SFX_CLEAR_S[] = { {784, 120}, {988, 120}, {1175, 120}, {1568, 300}, {0, 0} };
 static const rd_note SFX_OVER_S[]  = { {440, 200}, {392, 200}, {349, 200}, {262, 500}, {0, 0} };
 
+static const rd_note SFX_DIVE_S[]  = { {1400, 120}, {1200, 120}, {1000, 120}, {850, 140}, {700, 160}, {600, 200}, {500, 300}, {0, 0} };
+
 static const struct { uint16_t bit; const rd_note *seq; } SFX_TABLE[] = {   /* 優先順序 */
-    { SFX_OVER, SFX_OVER_S }, { SFX_CLEAR, SFX_CLEAR_S }, { SFX_ALARM, SFX_ALARM_S },
+    { SFX_OVER, SFX_OVER_S }, { SFX_CLEAR, SFX_CLEAR_S }, { SFX_DIVE, SFX_DIVE_S }, { SFX_ALARM, SFX_ALARM_S },
     { SFX_BIG, SFX_BIG_S },   { SFX_HURT, SFX_HURT_S },   { SFX_ITEM, SFX_ITEM_S },
     { SFX_LOOP, SFX_LOOP_S }, { SFX_BOOM, SFX_BOOM_S },   { SFX_HIT, SFX_HIT_S },
     { SFX_SHOT, SFX_SHOT_S },

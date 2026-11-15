@@ -28,7 +28,7 @@ pico_sdk_init()
 
 include(${RETRO_SDK_PATH}/cmake/retro_sdk.cmake)
 
-add_executable(skyace main.c scene.c)
+add_executable(skyace main.c scene.c ships.c)
 target_link_libraries(skyace retro_sdk)          # 要用 SD 卡（hal/sd.h）改成 retro_sdk_sd
 target_compile_options(skyace PRIVATE -Wall -Wextra)
 retro_app(skyace COVER ${CMAKE_CURRENT_LIST_DIR}/assets/SKYACE.RAW)

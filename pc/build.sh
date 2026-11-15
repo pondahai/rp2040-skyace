@@ -16,7 +16,7 @@ OUT=${OUT:-$GAME/build_pc}
 mkdir -p "$OUT"
 ${CC:-gcc} -std=c11 -O2 -Wall -Wextra \
     -I"$SDK/lib" -I"$SDK/tools/pc" -I"$GAME" \
-    "$HERE/preview.c" "$GAME/scene.c" \
+    "$HERE/preview.c" "$GAME/scene.c" "$GAME/ships.c" \
     "$SDK/lib/gfx.c" "$SDK/lib/buttons.c" "$SDK/tools/pc/png.c" \
     -lm -o "$OUT/preview"
 echo "$OUT/preview"

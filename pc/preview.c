@@ -5,6 +5,7 @@
  *
  * 每個字元模擬 10 幀：L R U D 按住方向（同時一直開火），A 按一下 A，
  * B 翻滾，S START，. 什麼都不按，數字 n = 跳過 n*100 幀（邊飛邊開火、左右閃）。
+ * 測試用：#n 從第 n 關開始，F 跳到發現敵艦前，E 補滿能量，f 前進 1 幀。
  * 先把畫面填滿洋紅色：render 沒畫到的像素在實機會是上一條的殘影。
  */
 #include <stdio.h>
@@ -21,6 +22,7 @@ static void run(int frames, uint8_t held, uint8_t fired)
     for (int f = 0; f < frames; f++) {
         scene_update(&sc, held, f == 0 ? fired : 0);
         if (sc.state == ST_OVER) return;
+        if (sc.energy < 300) sc.energy = 1000;      /* 預覽不讓能量耗盡 */
     }
 }
 
@@ -40,6 +42,10 @@ int main(int argc, char **argv)
         case 'B': run(10, RD_BTN_A, RD_BTN_B);         break;
         case 'S': run(1, 0, RD_BTN_START);             break;
         case '.': run(10, 0, 0);                       break;
+        case 'f': run(1, RD_BTN_A, 0);                 break;
+        case 'E': sc.energy = 1000;                    break;
+        case 'F': sc.t = FLEET_T - 2;                  break;
+        case '#': if (k[1]) { scene_debug(&sc, k[1] - '0', 0); k++; } break;
         default:
             if (*k >= '1' && *k <= '9')
                 for (int i = 0; i < (*k - '0') * 10; i++)
@@ -55,7 +61,8 @@ int main(int argc, char **argv)
         fprintf(stderr, "cannot write %s\n", out);
         return 1;
     }
-    printf("%s  state=%d stage=%d t=%d score=%lu energy=%d\n", out, sc.state, sc.stage,
-           sc.t, (unsigned long)sc.score, sc.energy);
+    printf("%s  state=%d stage=%d t=%d fleet=%d/%d boss=%d bt=%d/%d rate=%d score=%lu energy=%d\n",
+           out, sc.state, sc.stage, sc.t, sc.fleet, sc.fleet_t, sc.boss_on, sc.bt_killed, sc.bt_total, sc.rate,
+           (unsigned long)sc.score, sc.energy);
     return 0;
 }
